@@ -26,7 +26,7 @@ def mecopner(browser, link):
 
 
 
-def getTMLinkList(link, browser = initmec()):
+def getTMLinkList(link = "http://www.chess.com/groups/forumview/dummy-sttcl-test-forum", browser = initmec()):
     '''
     takes link to a open chess.com forum from which TM objects are constructed
     returns list of TM objects
@@ -39,7 +39,7 @@ def getTMLinkList(link, browser = initmec()):
 
         for note in soup.find_all(class_ = "user-content"):
             for word in note.text.split():
-                if word.startswith("http://www.chess.com/groups/team_match?id=") and word not in linklst:
+                if word.startswith("http://www.chess.com/groups/team_match?id=") and word not in TMlist:
                     TMlist.append(TM(word, mecopner(browser, word)))
 
         if not soup.find_all(class_ = "next-on"):
@@ -58,11 +58,17 @@ class TM:
 
         #match name MUST be of the format 'STTCL: ATTACKING_GROUP attacks PI_NAME'
         #ie. match name MUST start with 'STTCL:' followed by attackers name, the word ' attack ' followed by, and ending with, PI name!!!
-        self.attackinggroup, self.attackedPI = self.TMname.lower().split("STTCL:")[1].split(" attacks ")
+        self.attackinggroup, self.attackedPI = self.TMname.lower().split("sttcl:")[1].split(" attacks ")
 
         groups = [x.strip() for x in soup.find(class_ = "default border-top alternate").text.replace(u'\xa0', u' ').strip().split("\n")[1:] if x.strip() != ""]
-        self.team1 = groups[0]
-        self.team2 = groups[1]
+        self.team1 = groups[0].lower()
+        self.team2 = groups[1].lower()
+
+        if self.attackinggroup != self.team1 and self.attackinggroup != self.team2:
+            if self.attackinggroup in self.team1 and not self.attackinggroup in self.team2:
+                self.attackinggroup = self.team1
+            elif self.attackinggroup in self.team2 and not self.attackinggroup in self.team1:
+                self.attackinggroup = self.team2
 
         points = groups[2].split(" = ")[1:]
         try:
@@ -84,13 +90,34 @@ class TM:
                     self.regopendate = dateFormat(tmp[i+1])
 
                 elif x == "Players Per Team:":
-                    self.players = tmp[i+1]
+                    self.players = int(tmp[i+1])
 
                 elif x == "Started On:":
                     self.startdate = dateFormat(tmp[i+1])
 
                 elif x == "Rating Range:":
                     self.ratingrange = tmp[i+1]
+
+    def get_result(self):
+        totpoints = self.players * 2
+        pointsremain = totpoints - self.points_team1 - self.points_team2
+
+        if pointsremain == 0:
+            if self.points_team1 > self.points_team2:
+                return ["won", self.team1, "lost", self.team2]
+            elif self.points_team1 < self.points_team2:
+                return ["won", self.team2, "lost", self.team1]
+            else:
+                return "draw"
+
+        return "ongoing"
+
+    def __eq__(self, other):
+        '''
+        compare with other objects
+        other:      TM object
+        '''
+        return self.link == other.get_TMlink()
 
     def get_TMname(self):
         return self.TMname
@@ -108,6 +135,10 @@ class TM:
         return self.ratingrange
     def get_Standing(self):
         return {self.team1: self.points_team1, self.team2: self.points_team2}
+    def get_attacker(self):
+        return self.attackinggroup
+    def get_teams(self):
+        return [self.team1, self.team2]
     def get_TotalNumberPoints(self):
         return self.players * 2
     def get_PointsRemaining(self):
@@ -116,7 +147,7 @@ class TM:
 def dateFormat(date):
     '''
     takes a date in the format "Jun 4, 2015"
-    returns list of integers [2015, 6, 4]
+    returns list of integers [year, month, day]
     '''
     date = date.replace("Jan", "01").replace("Feb", "02").replace("Mar", "03").replace("Apr", "04").replace("May", "05").replace("Jun", "06").replace("Jul", "07").replace("Aug", "08").replace("Sep", "09").replace("Oct", "10").replace("Nov", "11").replace("Dec", "12").replace(",", "").split(" ")
     return [int(date[2]), int(date[0]), int(date[1])]
