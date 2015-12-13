@@ -102,7 +102,11 @@ class TM:
         totpoints = self.players * 2
         pointsremain = totpoints - self.points_team1 - self.points_team2
 
-        if pointsremain == 0:
+        PW = False
+        if self.points_team1 > self.points_team2 + pointsremain or self.points_team2 > self.points_team1 + pointsremain:
+            PW = True
+
+        if pointsremain == 0 or PW:
             if self.points_team1 > self.points_team2:
                 return ["won", self.team1, "lost", self.team2]
             elif self.points_team1 < self.points_team2:
@@ -139,6 +143,8 @@ class TM:
         return self.attackinggroup
     def get_teams(self):
         return [self.team1, self.team2]
+    def get_PI(self):
+        return self.attackedPI
     def get_TotalNumberPoints(self):
         return self.players * 2
     def get_PointsRemaining(self):
