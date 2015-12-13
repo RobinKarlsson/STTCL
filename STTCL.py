@@ -96,7 +96,7 @@ class STTCLGroup:
         if TM in self.completedGames or not TM in self.ongoingGames:
             return
 
-        PIchallenged = TM.get_PI
+        PIchallenged = TM.get_PI()
 
         self.ongoingGames.remove(TM)
         self.completedGames.append(TM)
