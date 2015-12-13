@@ -46,8 +46,22 @@ class STTCLGroup:
         result = TM.get_result()
         attacker = TM.get_attacker()
 
-        if result == "ongoing":
-            self.ongoingGames.append(TM)
+        if result == "draw" or result == "ongoing":
+            ""
+        elif self.name == result[1]:
+            result = "Won"
+        else:
+            result = "Lost"
+
+        if attacker == self.name:
+            role = "Attacker"
+            self.attack(TM)
+        else:
+            role = "Defender"
+            self.defend(TM)
+
+        if result != "ongoing":
+            self.gameCompleted(TM, result, role)
         
 
     def defend(self, TM):
@@ -72,16 +86,17 @@ class STTCLGroup:
             self.availableAttack -= 1
             self.ongoingGames.append(TM)
 
-    def gameCompleted(self, TM, result, PI, role):
+    def gameCompleted(self, TM, result, role):
         '''
         TM:         TM object
         link:       match url
         result:     string Won, Lost or Draw
-        PI:         name of PI being challenged
         role:       string Attacker or Defender
         '''
         if TM in self.completedGames or not TM in self.ongoingGames:
             return
+
+        PIchallenged = TM.get_PI
 
         self.ongoingGames.remove(TM)
         self.completedGames.append(TM)
@@ -91,7 +106,7 @@ class STTCLGroup:
 
             if role == "Attacker":
                 self.availableAttack += 1
-                self.PI.append(PI)
+                self.PI.append(PIchallenged)
             else:
                 self.availableDefense += 1
 
