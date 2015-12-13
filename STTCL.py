@@ -9,6 +9,13 @@ class PlanetaryInstallation:
         self.name = name
         self.PIType = PIType
 
+    def __eq__(self, other):
+        '''
+        compare with other objects
+        other:      PlanetaryInstallation object
+        '''
+        return self.name == other.get_name()
+
     def get_name(self):
         return self.name
     def get_type(self):
@@ -20,8 +27,8 @@ class STTCLGroup:
         name:       string, name of group
         PI:         list of PlanetaryInstallations objects
         '''
-        self.name = name
-        self.PI = PI
+        self.name = name.lower()
+        self.PI = PI.lower()
 
         self.completedGames = []
         self.ongoingGames = []
@@ -32,34 +39,52 @@ class STTCLGroup:
         self.availableAttack = 2
         self.availableDefense = 2
 
-    def defend(self, link):
+    def addTM(self, TM):
         '''
-        link:       match url
+        TM:     TM object
         '''
-        if self.availableDefense > 0 and not link in self.ongoingGames and not link in self.completedGames:
+        result = TM.get_result()
+        attacker = TM.get_attacker()
+
+        if result == "ongoing":
+            self.ongoingGames.append(TM)
+        
+
+    def defend(self, TM):
+        '''
+        TM:       TM object
+        '''
+        if TM in self.ongoingGames or TM in self.completedGames:
+            return
+
+        elif self.availableDefense > 0 and not TM in self.ongoingGames and not TM in self.completedGames:
             self.availableDefense -= 1
-            self.ongoingGames.append(link)
+            self.ongoingGames.append(TM)
 
-    def attack(self, link):
+    def attack(self, TM):
         '''
-        link:       match url
+        TM:       TM object
         '''
-        if self.availableAttack > 0 and not link in self.ongoingGames and not link in self.completedGames:
+        if TM in self.ongoingGames or TM in self.completedGames:
+            return
+
+        elif self.availableAttack > 0:
             self.availableAttack -= 1
-            self.ongoingGames.append(link)
+            self.ongoingGames.append(TM)
 
-    def gameCompleted(self, link, result, PI, role):
+    def gameCompleted(self, TM, result, PI, role):
         '''
+        TM:         TM object
         link:       match url
         result:     string Won, Lost or Draw
         PI:         name of PI being challenged
         role:       string Attacker or Defender
         '''
-        if link in self.completedGames or not link in self.ongoingGames:
+        if TM in self.completedGames or not TM in self.ongoingGames:
             return
 
-        self.ongoingGames.remove(link)
-        self.completedGames.append(link)
+        self.ongoingGames.remove(TM)
+        self.completedGames.append(TM)
 
         if result == "Won":
             self.wins += 1
@@ -88,6 +113,13 @@ class STTCLGroup:
                 self.availableDefense += 1
 
         updateWinRatio()
+
+    def __eq__(self, other):
+        '''
+        compare with other objects
+        other:      STTCLGroup object
+        '''
+        return self.name == other.get_name()
 
     def updateWinRatio(self):
         self.winratio = (self.wins + self.losses + self.draws) / (self.wins * 1.0)
