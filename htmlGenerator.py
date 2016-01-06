@@ -52,7 +52,7 @@ def writeSeasons(grouplst, PIlst, TMlst):
 
 
     #generate string of TM data for each TM object in TMlst
-    tmHTML = "\n".join(['<tr><td><p class="text">%s</p></td><td><p class="text">%s</p></td><td><p class="text">%s</p></td><td><p class="text">%s</p></td><td><p class="text">%s</p></td><td><p class="text">%s</p></td><td><p class="text">%s</p></td></tr>' %(tm.get_attacker(), tm.get_defender(), tm.get_PIname(), tm.get_Players(), tm.get_Standing(), get_victor(tm), tm.get_TMlink()) for tm in TMlst])
+    tmHTML = "\n".join(['<tr><td><p class="text">%s</p></td><td><p class="text">%s</p></td><td><p class="text">%s</p></td><td><p class="text">%s</p></td><td><p class="text">%s</p></td><td><p class="text">%s</p></td><td><a href ="%s">link</a></td></tr>' %(tm.get_attacker(), tm.get_defender(), tm.get_PIname(), tm.get_Players(), tm.get_Standing(), get_victor(tm), tm.get_TMlink()) for tm in TMlst])
 
     seasonHTML = """
     <html>
@@ -250,7 +250,7 @@ def writeCSS():
     """
 
     writeTxt("css/global.css", globalcss)
-    writeTxt("css/season.css", globalcss)
+    writeTxt("css/season.css", seasoncss)
 
 
 
